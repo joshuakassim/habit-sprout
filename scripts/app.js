@@ -1,23 +1,52 @@
 import { Storage } from './storage.js';
 import { HeatmapRenderer } from './heatmap.js';
 
+/**
+ * HabitTracker is the main controller for the Habit Sprout app.
+ * Handles UI events, habit CRUD, modal management, and rendering.
+ */
 class HabitTracker {
   constructor() {
+    /**
+     * @type {Storage} Handles localStorage persistence.
+     */
     this.storage = new Storage();
+
+    /**
+     * @type {HeatmapRenderer} Renders heatmaps and calculates streaks/stats.
+     */
     this.heatmapRenderer = new HeatmapRenderer();
+
+    /**
+     * @type {Array<Object>} List of habit objects.
+     */
     this.habits = [];
+
+    /**
+     * @type {Object|null} The habit currently being edited.
+     */
     this.currentEditingHabit = null;
+
+    /**
+     * @type {string|null} The ID of the habit pending deletion.
+     */
     this.habitToDelete = null;
 
     this.init();
   }
 
+  /**
+   * Initialize the app: load habits, bind UI events, and render.
+   */
   init() {
     this.loadHabits();
     this.bindEvents();
     this.render();
   }
 
+  /**
+   * Bind all relevant DOM events for UI interaction.
+   */
   bindEvents() {
     // Add habit buttons
     document.querySelector('.add-habit-btn').addEventListener('click', () => {
@@ -71,7 +100,7 @@ class HabitTracker {
       }
     });
 
-    // Keyboard events
+    // Keyboard events for modal closing (Escape key)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeModals();
@@ -79,16 +108,27 @@ class HabitTracker {
     });
   }
 
+  /**
+   * Load all habits from storage.
+   */
   loadHabits() {
     this.habits = this.storage.getHabits();
   }
 
+  /**
+   * Generate a unique ID for a new habit.
+   * @returns {string} Unique habit ID.
+   */
   generateId() {
     return (
       'habit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
     );
   }
 
+  /**
+   * Open the modal for creating or editing a habit.
+   * @param {Object|null} habit - The habit to edit, or null to create new.
+   */
   openHabitModal(habit = null) {
     this.currentEditingHabit = habit;
     const modal = document.getElementById('habitModal');
@@ -96,19 +136,20 @@ class HabitTracker {
     const title = document.getElementById('modalTitle');
     const submitText = document.getElementById('submitText');
 
-    // Reset form
+    // Reset form and errors
     form.reset();
     this.clearErrors();
+    // Select default icon
     this.selectIcon(document.querySelector('.icon-option[data-icon="📚"]'));
 
     if (habit) {
-      // Edit mode
+      // Edit mode: fill form with habit data
       title.textContent = 'Edit Habit';
       submitText.textContent = 'Update Habit';
       document.getElementById('habitTitle').value = habit.title;
       this.selectIcon(document.querySelector(`[data-icon="${habit.icon}"]`));
     } else {
-      // Create mode
+      // Create mode: reset form
       title.textContent = 'Add New Habit';
       submitText.textContent = 'Create Habit';
     }
@@ -118,6 +159,9 @@ class HabitTracker {
     document.body.style.overflow = 'hidden';
   }
 
+  /**
+   * Close the habit modal and reset editing state.
+   */
   closeHabitModal() {
     const modal = document.getElementById('habitModal');
     modal.classList.remove('visible');
@@ -125,6 +169,9 @@ class HabitTracker {
     document.body.style.overflow = '';
   }
 
+  /**
+   * Close the confirmation modal and reset deletion state.
+   */
   closeConfirmModal() {
     const modal = document.getElementById('confirmModal');
     modal.classList.remove('visible');
@@ -132,11 +179,18 @@ class HabitTracker {
     document.body.style.overflow = '';
   }
 
+  /**
+   * Close all open modals.
+   */
   closeModals() {
     this.closeHabitModal();
     this.closeConfirmModal();
   }
 
+  /**
+   * Select an icon in the icon grid.
+   * @param {HTMLElement} iconElement - The icon element to select.
+   */
   selectIcon(iconElement) {
     if (!iconElement) return;
 
@@ -150,12 +204,17 @@ class HabitTracker {
     document.getElementById('habitIcon').value = iconElement.dataset.icon;
   }
 
+  /**
+   * Handle form submission for creating or editing a habit.
+   * @param {Event} e - The form submit event.
+   */
   handleFormSubmit(e) {
     e.preventDefault();
 
     const title = document.getElementById('habitTitle').value.trim();
     const icon = document.getElementById('habitIcon').value;
 
+    // Validate form input
     if (!this.validateForm(title)) {
       return;
     }
@@ -183,6 +242,11 @@ class HabitTracker {
     this.render();
   }
 
+  /**
+   * Validate the habit form.
+   * @param {string} title - The habit title.
+   * @returns {boolean} True if valid, false otherwise.
+   */
   validateForm(title) {
     this.clearErrors();
     let isValid = true;
@@ -204,16 +268,25 @@ class HabitTracker {
     return isValid;
   }
 
+  /**
+   * Show a form error message.
+   * @param {string} elementId - The error element's ID.
+   * @param {string} message - The error message.
+   */
   showError(elementId, message) {
     const errorElement = document.getElementById(elementId);
     errorElement.textContent = message;
 
+    // Highlight the input field with error
     const input = errorElement.previousElementSibling;
     if (input) {
       input.classList.add('error');
     }
   }
 
+  /**
+   * Clear all form error messages and error styles.
+   */
   clearErrors() {
     document.querySelectorAll('.form-error').forEach((el) => {
       el.textContent = '';
@@ -224,6 +297,10 @@ class HabitTracker {
     });
   }
 
+  /**
+   * Open the edit modal for a specific habit.
+   * @param {string} habitId - The ID of the habit to edit.
+   */
   editHabit(habitId) {
     const habit = this.habits.find((h) => h.id === habitId);
     if (habit) {
@@ -231,20 +308,28 @@ class HabitTracker {
     }
   }
 
+  /**
+   * Open the confirmation modal to delete a habit.
+   * @param {string} habitId - The ID of the habit to delete.
+   */
   deleteHabit(habitId) {
     this.habitToDelete = habitId;
     const modal = document.getElementById('confirmModal');
     modal.classList.add('visible');
     document.body.style.overflow = 'hidden';
 
-    // Focus the confirm button
+    // Focus the confirm button for accessibility
     setTimeout(() => {
       document.querySelector('.confirm-delete').focus();
     }, 100);
   }
 
+  /**
+   * Confirm and perform deletion of a habit and its logs.
+   */
   confirmDelete() {
     if (this.habitToDelete) {
+      // Remove habit from local list and storage
       this.habits = this.habits.filter((h) => h.id !== this.habitToDelete);
       this.storage.deleteHabit(this.habitToDelete);
       this.storage.deleteLogs(this.habitToDelete);
@@ -254,11 +339,16 @@ class HabitTracker {
     }
   }
 
+  /**
+   * Toggle today's completion status for a habit.
+   * @param {string} habitId - The ID of the habit.
+   */
   toggleHabitToday(habitId) {
     const today = new Date().toISOString().split('T')[0];
     const logs = this.storage.getLogs(habitId);
     const isCompleted = logs[today] || false;
 
+    // Toggle completion for today
     logs[today] = !isCompleted;
     this.storage.saveLogs(habitId, logs);
 
@@ -266,6 +356,10 @@ class HabitTracker {
     this.renderHabitCard(habitId);
   }
 
+  /**
+   * Re-render a single habit card after update.
+   * @param {string} habitId - The ID of the habit.
+   */
   renderHabitCard(habitId) {
     const habit = this.habits.find((h) => h.id === habitId);
     if (!habit) return;
@@ -280,11 +374,15 @@ class HabitTracker {
     }
   }
 
+  /**
+   * Bind events for a single habit card.
+   * @param {string} habitId - The ID of the habit.
+   */
   bindHabitCardEvents(habitId) {
     const cardElement = document.querySelector(`[data-habit-id="${habitId}"]`);
     if (!cardElement) return;
 
-    // Bind toggle event
+    // Bind toggle event for today's completion
     const toggleButton = cardElement.querySelector('.today-toggle');
     if (toggleButton) {
       toggleButton.addEventListener('click', () => {
@@ -309,6 +407,11 @@ class HabitTracker {
     }
   }
 
+  /**
+   * Generate the HTML for a single habit card.
+   * @param {Object} habit - The habit object.
+   * @returns {string} HTML string for the habit card.
+   */
   createHabitCardHTML(habit) {
     const today = new Date().toISOString().split('T')[0];
     const logs = this.storage.getLogs(habit.id);
@@ -369,23 +472,33 @@ class HabitTracker {
         `;
   }
 
+  /**
+   * Escape HTML to prevent XSS in habit titles.
+   * @param {string} text - The text to escape.
+   * @returns {string} Escaped HTML.
+   */
   escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
+  /**
+   * Render all habits or show the empty state.
+   */
   render() {
     const habitsGrid = document.getElementById('habitsGrid');
     const emptyState = document.getElementById('emptyState');
 
     if (this.habits.length === 0) {
+      // Show empty state if no habits
       habitsGrid.style.display = 'none';
       emptyState.classList.add('visible');
     } else {
       habitsGrid.style.display = 'grid';
       emptyState.classList.remove('visible');
 
+      // Render all habit cards
       habitsGrid.innerHTML = this.habits
         .map((habit) => this.createHabitCardHTML(habit))
         .join('');
