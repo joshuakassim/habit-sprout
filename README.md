@@ -1,11 +1,11 @@
-## 🌱 Habit‑Sprout
+## 📅 Daily Dot
 
-> **Grow your daily wins with a simple, offline, and visual habit tracker.**
+> **Grow your daily wins one dot at a time with a simple, offline, and visual habit tracker.**
 
 ---
 
 ### 📸 Demo & Screenshots
-- **Live Demo:** *(link here — GitHub Pages, Netlify, etc.)*
+- **Live Demo:** *https://daily-dot.netlify.app/*
 - **3-Minute Video Walkthrough:** [YOUR_VIDEO_LINK_HERE]
 - **Screenshots / GIFs:** Show the dashboard, “Add Habit” modal, and the heatmap in action.
 
@@ -35,11 +35,11 @@
 ### 🚀 Getting Started
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/joshuakassim/habit-sprout.git
-   cd habit-sprout
+   git clone https://github.com/joshuakassim/daily-dot.git
+   cd daily-dot
    ```
 2. **Open `index.html` in Visual Studio Code**
-3. **Run using [Live Server extension](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension**  
+3. **Run using [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension**  
 
 ---
 
@@ -54,7 +54,7 @@
 
 ### 📂 Project Structure
 ```
-habit-sprout/
+daily-dot/
 │
 ├── index.html       # main UI
 ├── styles.css       # responsive styling
@@ -87,6 +87,6 @@ This separation ensures efficient reads/writes and keeps the data organized.
 ---
 
 ### 📜 License
-Specify your license here (e.g., MIT) so others know how they can use your code.
+This project is open source and available under the [MIT License](LICENSE).
 
 ---
